@@ -1,3 +1,6 @@
+#Problem 2
+#J Barton
+#A02298690
 import numpy as np
 import matplotlib.pyplot as mp
 
