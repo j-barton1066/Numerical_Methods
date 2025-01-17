@@ -5,29 +5,29 @@
 import numpy as np
 from scipy import stats
 #generate array
-numlist = np.random.randint(0,101, size=20)
+rannum = np.random.randint(0,101, size=20)
 
 #create list and convert array to list
-list = []
+numlist = []
 
-for i in numlist:
-    list.append(int(i))
+for i in rannum:
+    numlist.append(int(i))
 #print(list)
 
 #Put list in reverse order
-list.sort(reverse=True)
-print(list)
+numlist.sort(reverse=True)
+print(numlist)
 
-mean = np.mean(list)
-median = np.median(list)
-mode = stats.mode(list)
+mean = np.mean(numlist)
+median = np.median(numlist)
+mode = stats.mode(numlist)
 modelist = []
-modevalue = list.append(int(mode.mode))
+modevalue = numlist.append(int(mode.mode))
 
 
 
 print("Mean: ", mean)
-print("Meadian: ", median)
+print("Median: ", median)
 if len(modelist) == 0:
     print("Mode: All numbers are represented once")
 else:
