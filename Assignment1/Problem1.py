@@ -29,9 +29,9 @@ def rootcheck(p, q, r):
         if answer1 == answer2:
             print(f"{answer1}")
 
-p = 1
-q = 2
-r = 5
+p = (-1)
+q = 116
+r = -1078
 rootcheck(p, q, r)
 
 
