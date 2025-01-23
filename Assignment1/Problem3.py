@@ -24,8 +24,6 @@ mode = stats.mode(numlist)
 modelist = []
 modevalue = numlist.append(int(mode.mode))
 
-
-
 print("Mean: ", mean)
 print("Median: ", median)
 if len(modelist) == 0:
