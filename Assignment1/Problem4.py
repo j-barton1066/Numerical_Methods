@@ -77,7 +77,7 @@ mp.ylabel("Velocity (m/s)")
 mp.title("")
 mp.legend(loc='upper right')
 mp.grid()
-#mp.savefig("Problem4_PartC.png")
+mp.savefig("Problem4_PartD2.png")
 mp.show()
 
 

@@ -22,10 +22,11 @@ mean = np.mean(numlist)
 median = np.median(numlist)
 mode = stats.mode(numlist)
 modelist = []
-modevalue = numlist.append(int(mode.mode))
+modelist.append(int(mode.mode))
 
 print("Mean: ", mean)
 print("Median: ", median)
+
 if len(modelist) == 0:
     print("Mode: All numbers are represented once")
 else:
