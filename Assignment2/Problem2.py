@@ -44,21 +44,48 @@ def gaussian_elimination(A,b):
             factor = A[k, i] / A[i, i]
             for j in range(i, n):
                 A[k, j] -= factor * A[i, j]
-                b[k] -= factor * b[i]
+            b[k] -= factor * b[i]
     #backward
     x = np.zeros(n)
     for i in range(n-1, -1, -1):
         #adds out of bounds condition
-        x[i] = (b[i] - np.dot(A[i, i+1:] if i+1 < n else 0, x[i+1:] if i+1 < n else 0)) / A[i, i]
+        x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
     return x
+def main():
 
-n = int(input("What is the size of the N x N matrix? "))
-#print("Matrix:")
-#print(create_matrix(n))
+    n = int(input("What is the size of the N x N matrix? "))
 
-A = create_matrix(n)
-b = solution_matrix(n)
-# print(A)
-# print(b)
-# solution = gaussian_elimination(A,b)
-# print(solution)
+    A = create_matrix(n)
+    b = solution_matrix(n).flatten()
+    print(f"The System to be solved is: ")
+    print("\nAugmented Matrix: \n{A |b}")
+    print(np.hstack((A,b.reshape(-1, 1))))
+
+    solution = gaussian_elimination(A,b)
+
+    print("\nThe Solution Matrix is:")
+    for i, val in enumerate(solution):
+        print(f"Row {i+1}: {val:.4f}")
+    c = np.linalg.solve(A,b)
+    print("The python library to solve matrix is np.linalg.solve running this with the matrix results in: ")
+    print(f"{c}")
+
+if __name__ == "__main__":
+    main()
+
+"""
+A = np.array([
+    [2, -1, 3, 0, 5, -2, 4, 1, -3],
+    [4, 2, -2, 1, -3, 5, 0, 6, 7],
+    [1, 5, 7, -2, 4, -1, 3, 0, 2],
+    [3, 0, -4, 6, -1, 2, 5, -3, 1],
+    [5, 7, 2, -3, 8, 0, 4, 6, -2],
+    [-2, 4, 1, 3, -5, 7, -6, 0, 8],
+    [6, -3, 5, 0, 2, 4, 1, -7, -1],
+    [7, 8, -2, 4, -6, 1, 3, 5, 0],
+    [-1, 3, 6, -5, 0, 2, 7, -4, 8]
+])
+
+
+b = np.array([10, 5, 8, 3, 7, 2, 6, 4, 9])
+"""
