@@ -1,0 +1,36 @@
+"""
+# Pseudocode for Doolittle Method
+
+function doolittle_LU_decomposition(A):
+    n = number of rows in A
+    L = identity_matrix(n)
+    U = zero_matrix(n)
+
+    for i from 1 to n:
+        # Upper Triangular Matrix U
+        for k from i to n:
+            sum = 0
+            for j from 1 to i-1:
+                sum = sum + (L[i][j] * U[j][k])
+            U[i][k] = A[i][k] - sum
+
+        # Lower Triangular Matrix L
+        for k from i+1 to n:
+            sum = 0
+            for j from 1 to i-1:
+                sum = sum + (L[k][j] * U[j][i])
+            L[k][i] = (A[k][i] - sum) / U[i][i]
+
+    return L, U
+
+# Helper functions to create matrices
+function identity_matrix(n):
+    I = zero_matrix(n)
+    for i from 1 to n:
+        I[i][i] = 1
+    return I
+
+function zero_matrix(n):
+    Z = matrix of n x n filled with zeros
+    return
+"""
