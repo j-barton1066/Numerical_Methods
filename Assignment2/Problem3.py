@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.matlib import identity
+
 
 
 def create_matrix(n):
@@ -37,35 +37,42 @@ def crout(A):
     L = zero_matrix(n)
     U = identity_matrix(n)
 
-    for i from 1 to n:
+    for i in range(n):
         #Lower Triangular Matrix L
-        for j from i to n:
+        for j in range(i, n):
             sum = 0
-            for k from 1 to i-1:
+            for k in range(i):
                 sum = sum + (L[i][k] * U[k][j])
         #Upper Triangle
-        for j from i+1 to n:
+        for j in range(i+1, n):
             sum = 0
-            for k from 1 to i-1:
+            for k in range(i):
                 sum = sum + (L[i][k] * U[k][j])
             U[i][j] = (A[i][j] - sum)
     return L, U
 
 def identity_matrix(n):
-    I = zero_matrix(n)
-    for i from 1 to n:
+    I = [[0] * n for _ in range(n)]
+    for i in range(n):
         I[i][i] = 1
     return I
+
+def zero_matrix(n):
+    Z = [[0] for _ in range(n)]
+    return Z
 
 def main():
 
     n = int(input("What is the size of the N x N matrix? "))
 
-    print(identity_matrix(n))
+    I = identity_matrix(n)
+    Z = zero_matrix(n)
+
     #
     # A = create_matrix(n)
     # print(f"The System to be solved is: ")
-    # print("\nMatrix: \n{A}")
+    print(f"\nMatrix: \n{I}")
+    print(f"\nMatrix: \n{Z}")
     #
     #
     # crout = crout(A)
