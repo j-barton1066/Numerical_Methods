@@ -51,12 +51,25 @@ def gaussian_elimination(A,b):
         #adds out of bounds condition
         x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
     return x
+
+def random_matrix(n):
+    return np.random.rand(n,n)
+
+def random_solution_matrix(n):
+    return np.random.rand(n)
+
 def main():
 
     n = int(input("What is the size of the N x N matrix? "))
+    choice = input("Do you want to enter a matrix(e) or create a random one(r)? (Enter 'e' or 'r') ")
+    if choice == 'e':
+        A = create_matrix(n)
+        b = solution_matrix(n).flatten()
+    else:
+        A = random_matrix(n)
+        b = random_solution_matrix(n)
 
-    A = create_matrix(n)
-    b = solution_matrix(n).flatten()
+
     print(f"The System to be solved is: ")
     print("\nAugmented Matrix: \n{A |b}")
     print(np.hstack((A,b.reshape(-1, 1))))

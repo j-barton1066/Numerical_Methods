@@ -1,5 +1,7 @@
 import numpy as np
 
+def random_matrix(n):
+    return np.random.randint(-10, 10, size=(n,n))
 
 
 def create_matrix(n):
@@ -27,16 +29,53 @@ def crout(A):
         for j in range(i, n):
             sum = 0
             for k in range(i):
-                sum += (L[i][k] * U[k][j])
+                sum += L[i][k] * U[k][j]
             L[j][i] = A[j][i] - sum
 
         #Upper Triangle
-        for j in range(i, n):
+        for j in range(i+1, n):
             sum = 0
             for k in range(i):
                 sum += (L[i][k] * U[k][j])
+            if abs(L[i][i]) < 1e-10:
+                print(f"\n The determinant of the matrix is {np.linalg.det(A)}")
+                return "Matrix is singular. No inverse exists."
             U[i][j] = (A[i][j] - sum)/ L[i][i]
     return L, U
+
+def forward_substitution(L, b):
+    n = len(b)
+    y = np.zeros(n)
+    for i in range(n):
+        y[i] = b[i]
+        for j in range(i):
+            y[i] -= L[i][j] * y[j]
+        y[i] = y[i] / L[i][i]
+    return y
+
+def backward_substitution(U, y):
+    n = len(y)
+    x = np.zeros(n)
+    for i in range(n-1, -1, -1):
+        x[i] = y[i]
+        for j in range(i+1, n):
+            x[i] -= U[i][j] * x[j]
+        x[i] = x[i] / U[i][i]
+    return x
+
+def inverse_matrix(A):
+    n = len(A)
+    (L, U) = crout(A)
+    I = identity_matrix(n)
+    inv_A = np.zeros((n,n))
+
+    for i in range(n):
+        y = forward_substitution(L, I[:, i])
+        x = backward_substitution(U, y)
+        inv_A[:,i] = x
+    return inv_A
+
+
 
 def identity_matrix(n):
     I = np.identity(n)
@@ -47,19 +86,35 @@ def zero_matrix(n):
     return Z
 
 def main():
+    
 
     n = int(input("What is the size of the N x N matrix? "))
 
     I = identity_matrix(n)
     Z = zero_matrix(n)
 
-    
-    A = create_matrix(n)
-    print(f"The System to be solved is: ")
+    choice = input("Do you want to enter the matrix manually? (y/n): ")
+    if choice == 'y':
+        A = create_matrix(n)
+    else:
+        A = random_matrix(n)
+
     print(f"\nMatrix: \n{A}")
-    L,U = crout(A)
-    print(f"\nLower Triangular Matrix: \n{L}")
-    print(f"\nUpper Triangular Matrix: \n{U}")
+    try:
+        L, U = crout(A)
+        print(f"\nLower Triangular Matrix: \n{L}")
+        print(f"\nUpper Triangular Matrix: \n{U}")
+        print(f"Python function verification: \n{np.dot(L, U)}")
+        #compute inverse
+        inv_A = inverse_matrix(A)
+        print(f"\nInverse Matrix: \n{inv_A}")
+        print(f"Python function verification: \n{np.linalg.inv(A)}")
+        print(f"Close verifcation: \n{np.allclose(inv_A, np.linalg.inv(A))}")
+        #check if the inverse is correct
+        print(f"\nVerification: \n{np.dot(A, inv_A)}")
+    except:
+        print("Matrix is sigular. No inverse exists.")
+
 
 
 if __name__ == "__main__":
