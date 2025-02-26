@@ -37,9 +37,8 @@ def crout(A):
             sum = 0
             for k in range(i):
                 sum += (L[i][k] * U[k][j])
-            if abs(L[i][i]) < 1e-10:
-                print(f"\n The determinant of the matrix is {np.linalg.det(A)}")
-                return "Matrix is singular. No inverse exists."
+            if np.isclose(L[i][i],0):
+                raise ValueError("Matrix is singular. No inverse exists.")
             U[i][j] = (A[i][j] - sum)/ L[i][i]
     return L, U
 
@@ -78,20 +77,16 @@ def inverse_matrix(A):
 
 
 def identity_matrix(n):
-    I = np.identity(n)
-    return I
+    return np.identity(n)
 
 def zero_matrix(n):
-    Z = np.zeros((n,n))
-    return Z
+    return np.zeros((n,n))
 
 def main():
     
 
     n = int(input("What is the size of the N x N matrix? "))
 
-    I = identity_matrix(n)
-    Z = zero_matrix(n)
 
     choice = input("Do you want to enter the matrix manually? (y/n): ")
     if choice == 'y':
@@ -112,8 +107,11 @@ def main():
         print(f"Close verifcation: \n{np.allclose(inv_A, np.linalg.inv(A))}")
         #check if the inverse is correct
         print(f"\nVerification: \n{np.dot(A, inv_A)}")
-    except:
-        print("Matrix is sigular. No inverse exists.")
+    except ValueError as e:
+        print(e)
+    except Exception as e:
+        print("Matrix is singular. No inverse exists.")
+        print(e)
 
 
 
