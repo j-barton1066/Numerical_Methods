@@ -1,6 +1,5 @@
 #Gauss Elimination with Partial Pivoting for an N x N matrix
 import numpy as np
-
 def create_matrix(n):
     matrix = []
     print(f"Enter the {n} x {n} matrix by rows: ")
@@ -28,7 +27,6 @@ def solution_matrix(n):
         solution.append(row_list)
     solution = np.array(solution, dtype=float)
     return solution
-
 
 
 def gaussian_elimination(A,b):
