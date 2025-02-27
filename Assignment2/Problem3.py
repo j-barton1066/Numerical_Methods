@@ -83,11 +83,7 @@ def zero_matrix(n):
     return np.zeros((n,n))
 
 def main():
-    
-
     n = int(input("What is the size of the N x N matrix? "))
-
-
     choice = input("Do you want to enter the matrix manually? (y/n): ")
     if choice == 'y':
         A = create_matrix(n)
@@ -99,14 +95,15 @@ def main():
         L, U = crout(A)
         print(f"\nLower Triangular Matrix: \n{L}")
         print(f"\nUpper Triangular Matrix: \n{U}")
-        print(f"Python function verification: \n{np.dot(L, U)}")
+        #print(f"Python function verification: \n{np.dot(L, U)}")
         #compute inverse
         inv_A = inverse_matrix(A)
         print(f"\nInverse Matrix: \n{inv_A}")
         print(f"Python function verification: \n{np.linalg.inv(A)}")
-        print(f"Close verifcation: \n{np.allclose(inv_A, np.linalg.inv(A))}")
-        #check if the inverse is correct
-        print(f"\nVerification: \n{np.dot(A, inv_A)}")
+        print(f"\nVerification: \n{np.round(np.dot(A, inv_A))}")
+        print(f"\nVerification: \n{np.round(np.dot(inv_A, A))}")
+        print(f"verification: \n{np.round(np.dot(A, np.linalg.inv(A)))}")
+        print(f"\nVerification: \n{np.round(np.dot(np.linalg.inv(A), A))}")
 
     except ValueError as e:
         print(e)
