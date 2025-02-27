@@ -107,6 +107,7 @@ def main():
         print(f"Close verifcation: \n{np.allclose(inv_A, np.linalg.inv(A))}")
         #check if the inverse is correct
         print(f"\nVerification: \n{np.dot(A, inv_A)}")
+
     except ValueError as e:
         print(e)
     except Exception as e:
