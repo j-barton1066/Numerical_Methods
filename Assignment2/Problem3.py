@@ -27,19 +27,16 @@ def crout(A):
     for i in range(n):
         #Lower Triangular Matrix L
         for j in range(i, n):
-            sum = 0
-            for k in range(i):
-                sum += L[i][k] * U[k][j]
-            L[j][i] = A[j][i] - sum
+            sum_val = sum(L[j][k] * U[k][i] for k in range(i))
+            L[j][i] = A[j][i] - sum_val
+            
 
         #Upper Triangle
         for j in range(i+1, n):
-            sum = 0
-            for k in range(i):
-                sum += (L[i][k] * U[k][j])
-            if np.isclose(L[i][i],0):
+            sum_val = sum(L[i][k] * U[k][j] for k in range(i))
+            if np.isclose(L[i][i], 0, atol=1e-10):
                 raise ValueError("Matrix is singular. No inverse exists.")
-            U[i][j] = (A[i][j] - sum)/ L[i][i]
+            U[i][j] = (A[i][j] - sum_val)/ L[i][i]
     return L, U
 
 def forward_substitution(L, b):
@@ -64,13 +61,15 @@ def backward_substitution(U, y):
 
 def inverse_matrix(A):
     n = len(A)
-    (L, U) = crout(A)
+    L, U = crout(A)
     I = identity_matrix(n)
     inv_A = np.zeros((n,n))
 
     for i in range(n):
         y = forward_substitution(L, I[:, i])
+        #print(y)
         x = backward_substitution(U, y)
+        #print(x)
         inv_A[:,i] = x
     return inv_A
 
@@ -89,21 +88,25 @@ def main():
         A = create_matrix(n)
     else:
         A = random_matrix(n)
+    # n = 3
+    # A = np.array([[2, -1, 1], [-3, 3, 9], [-1, 2, 4]], dtype=float)
 
     print(f"\nMatrix: \n{A}")
     try:
         L, U = crout(A)
         print(f"\nLower Triangular Matrix: \n{L}")
         print(f"\nUpper Triangular Matrix: \n{U}")
-        #print(f"Python function verification: \n{np.dot(L, U)}")
         #compute inverse
         inv_A = inverse_matrix(A)
         print(f"\nInverse Matrix: \n{inv_A}")
-        print(f"Python function verification: \n{np.linalg.inv(A)}")
-        print(f"\nVerification: \n{np.round(np.dot(A, inv_A))}")
-        print(f"\nVerification: \n{np.round(np.dot(inv_A, A))}")
-        print(f"verification: \n{np.round(np.dot(A, np.linalg.inv(A)))}")
-        print(f"\nVerification: \n{np.round(np.dot(np.linalg.inv(A), A))}")
+        print(f"Python function Inversere: \n{np.linalg.inv(A)}")
+       
+        
+        print(f"\nVerification: \n{np.abs(np.round(np.dot(A, inv_A)))}")
+
+        #print(f"\nPython Identity Verification: \n{np.round(np.dot(np.linalg.inv(A), A))}")
+        
+        
 
     except ValueError as e:
         print(e)
