@@ -13,7 +13,7 @@ def max_altitude(z0, m, c, g, v0):
     return z_max, t_max
 
 def dzfunction(x0, v0, m, c, g):
-    return v0 * np.exp(- (c/m) * x0) - (m * g / c)
+    return v0 * np.exp(- (c/m) * x0) - (m * g / c) * (1 - np.exp(- (c/m) * x0))
 
 def ddzfunction(x0, v0, m, c):
     return  -(c/m) * v0 * np.exp(- (c/m) * x0)
@@ -48,7 +48,7 @@ def main():
     print("The time to reach max altitude is: ", t_max)
 
     #newton_raphson
-    x0 = t_max
+    x0 = 1.5
     tol = 0.5
     max_iter = 100
     x1 = newton_method(v0, g, c, m, x0, tol, max_iter)
