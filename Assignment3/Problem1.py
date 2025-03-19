@@ -11,7 +11,26 @@ def max_altitude(z0, m, c, g, v0):
     #calculate the max altitude
     z_max = altitudegraph(z0, m, c, g, v0, t_max)
     return z_max, t_max
-    
+
+def dzfunction(x0, v0, m, c, g):
+    return v0 * np.exp(- (c/m) * x0) - (m * g / c)
+
+def ddzfunction(x0, v0, m, c):
+    return  -(c/m) * v0 * np.exp(- (c/m) * x0)
+
+def newton_method(v0, g,c, m, x0, tol, max_iter):
+    for i in range(max_iter):
+        dz = dzfunction(x0, v0, m, c, g)
+        ddz = ddzfunction(x0, v0, m, c)
+        
+        if abs(ddz) < 1e-10:
+            raise ValueError("The derivative is zero")
+        x1 = x0 - dz / ddz
+        print(f"Iteration {i+1}: x0 = {x0:.6f}, dz = {dz:.6f}, ddz = {ddz:.6f}, x1 = {x1:.6f}")
+        if abs(x1 - x0) < tol:
+            return x1
+        x0 = x1
+
 
 def main():
     g = 9.81 # m/s^2
@@ -28,6 +47,13 @@ def main():
     print("The max altitude is: ", z_max)
     print("The time to reach max altitude is: ", t_max)
 
+    #newton_raphson
+    x0 = t_max
+    tol = 0.5
+    max_iter = 100
+    x1 = newton_method(v0, g, c, m, x0, tol, max_iter)
+    print("The time to reach max altitude using newton method is: ", x1)
+    
     #print(z)
     plt.plot(t_values, z)
     plt.scatter(t_max, z_max, color = "red", label = "Max Altitude")
