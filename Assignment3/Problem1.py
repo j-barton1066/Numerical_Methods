@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from adjustText import adjust_text
 
 def altitudegraph(z0, m, c, g, v0, t):
     return z0 + (m / c * (v0 + ((m * g) / c)) * (1 - np.exp(-(c/m)*t)) - (m * g / c) * t)
@@ -12,34 +13,57 @@ def max_altitude(z0, m, c, g, v0):
     z_max = altitudegraph(z0, m, c, g, v0, t_max)
     return z_max, t_max
 
-def dzfunction(x0, v0, m, c, g):
-    return v0 * np.exp(- (c/m) * x0) - (m * g / c) * (1 - np.exp(- (c/m) * x0))
 
-def ddzfunction(x0, v0, m, c):
-    return  -(c/m) * v0 * np.exp(- (c/m) * x0)
-
-def newton_method(v0, g,c, m, x0, tol, max_iter):
+#Parabolic Method
+def parabolic_method(func, x0, x1, x2, tol=0.5, max_iter=100):
     for i in range(max_iter):
-        dz = dzfunction(x0, v0, m, c, g)
-        ddz = ddzfunction(x0, v0, m, c)
-        
-        if abs(ddz) < 1e-10:
-            raise ValueError("The derivative is zero")
-        x1 = x0 - dz / ddz
-        print(f"Iteration {i+1}: x0 = {x0:.6f}, dz = {dz:.6f}, ddz = {ddz:.6f}, x1 = {x1:.6f}")
-        if abs(x1 - x0) < tol:
+        f0 = func(x0)
+        f1 = func(x1)
+        f2 = func(x2)
+
+        numerator = (f0*(x1**2 - x2**2))+ (f1*(x2**2 - x0**2)) + (f2*(x0**2 - x1**2))
+        denominator = (f0 * (x1 - x2) + f1 * (x2 - x0) + f2 * (x0 - x1)) * 2
+
+        if abs(denominator) < 1e-10:
             return x1
+        x3 = numerator / denominator
+        f3 = func(x3)
+        if abs(x3-x1) < tol:
+            return x3
+        
         x0 = x1
+        x1 = x2
+        x2 = x3
+    return x1
 
-
+def random_search(ke, c, g, num_samples=10000):
+    z0 = 10 #m
+    best_m = None
+    best_v0 = None
+    best_z_max = -np.inf
+    for _ in range(num_samples):
+        m = np.random.uniform(0.1, 150)
+        v0 = np.sqrt(2 * ke / m)
+        z_max, _ = max_altitude(z0, m, c, g, v0)
+        if z_max > best_z_max:
+            best_z_max = z_max
+            best_m = m
+            best_v0 = v0
+    return best_m, best_v0, best_z_max
+    
 def main():
     g = 9.81 # m/s^2
     z0 = 100 # m
     v0 = 11.2 # m/s
     m = 100 # kg
     c = 5 #kg/s
-
     t_values =  np.linspace(0, 2.5, 1000)
+    func = lambda t: altitudegraph(z0, m, c, g, v0, t)
+    ke = 1500 #J
+    c = 8 #kg/s
+    x0 = 0
+    x1 = 1
+    x2 = 2
     z = []
     for t in t_values:
         z.append(altitudegraph(z0, m, c, g, v0, t))
@@ -47,20 +71,26 @@ def main():
     print("The max altitude is: ", z_max)
     print("The time to reach max altitude is: ", t_max)
 
-    #newton_raphson
-    x0 = 1.5
-    tol = 0.5
-    max_iter = 100
-    x1 = newton_method(v0, g, c, m, x0, tol, max_iter)
-    print("The time to reach max altitude using newton method is: ", x1)
-    
-    #print(z)
+    #paraoblic method
+    x_max = parabolic_method(func, x0, x1, x2)
+    print("The time to reach max altitude using parabolic method is: ", x_max)
+
+    #random search
+    print("Random Search using the inital height of 10m")
+    best_m, best_v0, best_z_max = random_search(ke, c, g)
+    print("The best mass is: ", best_m, "kg")
+    print("The best initial velocity is: ", best_v0, "m/s")
+    print("The max altitude is: ", best_z_max , "m")
+
+    texts = []
     plt.plot(t_values, z)
     plt.scatter(t_max, z_max, color = "red", label = "Max Altitude")
-    text = f"Max Altitude: {z_max:.2f} m"
-    plt.annotate(text, (t_max, z_max), xytext=(1.5, z_max), 
+    text1 = f"Max Altitude: {z_max:.2f} m"
+    texts.append(text1)
+    plt.annotate(text1, (t_max, z_max), xytext=(1.5, z_max), 
                  arrowprops=dict(arrowstyle="->", color='black'),
                  fontsize=12, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'))
+
     plt.xlabel("Time (s)")
     plt.ylabel("Altitude (m)")
     plt.title("Altitude vs Time")
