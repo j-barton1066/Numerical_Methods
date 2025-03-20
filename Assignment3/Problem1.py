@@ -8,7 +8,6 @@ def altitudegraph(z0, m, c, g, v0, t):
 def max_altitude(z0, m, c, g, v0):
     #calculate the time to reach max altitude
     t_max = m / c * np.log(1 + c * v0 / (m * g))
-
     #calculate the max altitude
     z_max = altitudegraph(z0, m, c, g, v0, t_max)
     return z_max, t_max
@@ -27,7 +26,6 @@ def parabolic_method(func, x0, x1, x2, tol=0.5, max_iter=100):
         if abs(denominator) < 1e-10:
             return x1
         x3 = numerator / denominator
-        f3 = func(x3)
         if abs(x3-x1) < tol:
             return x3
         
@@ -36,8 +34,9 @@ def parabolic_method(func, x0, x1, x2, tol=0.5, max_iter=100):
         x2 = x3
     return x1
 
-def random_search(ke, c, g, num_samples=10000):
+def random_search(ke, g, num_samples=10000):
     z0 = 10 #m
+    c = 8 #kg/s
     best_m = None
     best_v0 = None
     best_z_max = -np.inf
@@ -60,7 +59,6 @@ def main():
     t_values =  np.linspace(0, 2.5, 1000)
     func = lambda t: altitudegraph(z0, m, c, g, v0, t)
     ke = 1500 #J
-    c = 8 #kg/s
     x0 = 0
     x1 = 1
     x2 = 2
@@ -74,10 +72,11 @@ def main():
     #paraoblic method
     x_max = parabolic_method(func, x0, x1, x2)
     print("The time to reach max altitude using parabolic method is: ", x_max)
+    print("The max altitude using parabolic method is: ", altitudegraph(z0, m, c, g, v0, x_max))
 
     #random search
     print("Random Search using the inital height of 10m")
-    best_m, best_v0, best_z_max = random_search(ke, c, g)
+    best_m, best_v0, best_z_max = random_search(ke, g)
     print("The best mass is: ", best_m, "kg")
     print("The best initial velocity is: ", best_v0, "m/s")
     print("The max altitude is: ", best_z_max , "m")
