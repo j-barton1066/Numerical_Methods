@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from adjustText import adjust_text
+
 
 def altitudegraph(z0, m, c, g, v0, t):
     return z0 + (m / c * (v0 + ((m * g) / c)) * (1 - np.exp(-(c/m)*t)) - (m * g / c) * t)
