@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy as sp
 
 def Reynolds_number(velocity, diameter, viscosity):
     return (velocity * diameter) / viscosity
@@ -9,18 +10,14 @@ def drag_coefficient(Re):
 
 
 def main():
-    droplet_diameter = np.array([1e-6, 2e-6, 4e-6, 8e-6, 1.6e-5, 3.2e-5, 6.4e-5, 1.28e-4]) # m
-    v_droplet = np.linspace(1.5,50,5) # m/s
     #Ambient Parameters
     rho_droplet = 1000 # kg/m^3
     rho_air = 1.2 # kg/m^3
-    mu_air = 1.8e-5 # kg/(m*s) or Pa*s
+    mu_air = 1.48e-5 # m^2/s
     g = 9.81 # m/s^2
-    h = 1.75 # m
-    max_time = 10 # s
-    delta_t = 1e-4 # s
 
     #Droplet Parameters
+    droplet_diameter = np.array([1e-6, 2e-6, 4e-6, 8e-6, 1.6e-5, 3.2e-5, 6.4e-5, 1.28e-4]) # m
     radius = np.array([]) # m
     V_droplet = np.array([]) # m^3
     A_droplet = np.array([]) # m^2
@@ -30,12 +27,29 @@ def main():
         V_droplet = np.append(V_droplet, (4/3)*np.pi*(radius[i]**3))
         A_droplet = np.append(A_droplet, np.pi*(radius[i]**2))
         mass_droplet = np.append(mass_droplet, (np.pi/6)*(droplet_diameter[i]**3)*rho_droplet)
+    
+    #Initial Conditons
+    h = 1.75 # m (initial height)
+    u0 = np.array([1.5, 10, 20, 30, 40, 50]) # m/s (initial velocity)
+    initial_conditions = np.array([0, h, u0, 0]) # m, m/s [x0, y0, u0,v0]
+    # Time Parameters
+    t_span = (0, 10) # s
+    delta_t = 0.01 # s
 
-    # Calculate Reynolds number for each droplet diameter and velocity
-    Re = np.zeros((len(droplet_diameter), len(v_droplet)))
-    for i in range(len(droplet_diameter)):
-        for j in range(len(v_droplet)):
-            Re[i][j] = Reynolds_number(v_droplet[j], droplet_diameter[i], mu_air)
+    solver = sp.integrate.solve_ivp(
+        fun = lambda t, state: droplet_deriv(t, state, m, A, D, rho_air, mu_air, g),
+        t_span = t_span,
+        y0 = initial_conditions,
+        method = 'RK45',
+        events = lambda t, state: ground_event(t, state, h),
+        rtol = 1e-6,
+        atol = 1e-9,
+    )
+
+    t_values = solver.t
+    x_values = solver.y[0]
+    y_values = solver.y[1]
+
     
     # print("Reynolds Number:")
     # print(Re)   
