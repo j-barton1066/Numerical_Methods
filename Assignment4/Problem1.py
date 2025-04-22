@@ -13,16 +13,16 @@ def droplet_deriv(t, state, m, A, D, rho_air, mu_air, rho_droplet, g):
     vel = np.sqrt(u**2 + v**2)
     Re = Reynolds_number(vel, D, mu_air)
     Cd = drag_coefficient(Re)
-    F_drag = 0.5 * rho_air * A * Cd * u**2
+    F_drag = 0.5 * rho_air * A * Cd * vel**2
     
     if vel > 0:
         drag_u = F_drag * (u / vel)
         drag_v = F_drag * (v / vel)
     else:
-        drag_u = 0
-        drag_v = 0
+        drag_u = drag_v = 0
+        
     drag_u = -drag_u / m
-    drag_v = -drag_v / m + (1 - rho_air/rho_droplet) * g
+    drag_v = -drag_v / m - (1 - rho_air/rho_droplet) * g
     return [u, v, drag_u, drag_v]
 
 def ground_event(t, state, h):
@@ -55,12 +55,20 @@ def main():
     u0 = np.array([1.5, 10, 20, 30, 40, 50]) # m/s (initial velocity)
     
     t_span = (0, 20*60) # s
-    max_dt = 1 # s
-    times = {}
-    results = {}
+    max_dt = 1
+    first_times    = {}
+    last_times     = {}
+    first_states   = {}
+    last_states    = {}
+
     for speed in u0:
-        distances = []
-        fall_times = []
+        distances     = []
+        fall_times    = []
+        first_times[speed]  = []
+        last_times[speed]   = []
+        first_states[speed] = []
+        last_states[speed]  = []
+
         for D, mi, Ai in zip(droplet_diameter, mass_droplet, A_droplet):
             sol = solve_ivp(
                 fun=lambda t, st: droplet_deriv(t, st, mi, Ai, D, rho_air, mu_air, rho_droplet, g),
@@ -71,17 +79,57 @@ def main():
                 max_step=max_dt,
                 rtol=1e-6, atol=1e-9
             )
-            distances.append(sol.y[0, -1])
-            if sol.t_events[0].size > 0:
-                fall_times.append(sol.t_events[0][0])
-            else:
-                fall_times.append(sol.t[-1])
-        results[speed] = distances
-        times[speed] = fall_times
 
-    for speed, t_list in times.items():
-        print(f"{speed} m/s fall times (s):",
-              [f"{t:.2f}" for t in t_list])
+            # record first & last times
+            first_times[speed].append(sol.t[0])
+            last_times[speed].append(sol.t[-1])
+
+            # record first & last states (x, y, u, v)
+            first_states[speed].append(sol.y[:, 0].copy())
+            last_states[speed].append(sol.y[:, -1].copy())
+
+            # your existing outputs
+            distances.append(sol.y[0, -1])
+            fall_times.append(sol.t[0] if sol.t_events[0].size==0 else sol.t_events[0][0])
+
+        results[speed] = distances
+        times[speed]   = fall_times
+
+    # at the end you can print them however you like, e.g.:
+    for speed in u0:
+        for i, D in enumerate(droplet_diameter):
+            print(f"{speed} m/s, D={D*1e6:.1f} µm → "
+                  f"t_start={first_times[speed][i]:.2f}s, "
+                  f"state_start={first_states[speed][i]}, "
+                  f"t_end={last_times[speed][i]:.2f}s, "
+                  f"state_end={last_states[speed][i]}")
+    # times = {}
+    # results = {}
+    # for speed in u0:
+    #     distances = []
+    #     fall_times = []
+    #     for D, mi, Ai in zip(droplet_diameter, mass_droplet, A_droplet):
+    #         sol = solve_ivp(
+    #             fun=lambda t, st: droplet_deriv(t, st, mi, Ai, D, rho_air, mu_air, rho_droplet, g),
+    #             t_span=t_span,
+    #             y0=[0, h, speed, 0],
+    #             method='RK45',
+    #             events=lambda t, st: ground_event(t, st, h),
+    #             max_step=max_dt,
+    #             rtol=1e-6, atol=1e-9
+    #         )
+    #         distances.append(sol.y[0, -1])
+    #         if sol.t_events[0].size > 0:
+    #             fall_times.append(sol.t_events[0][0])
+    #         else:
+    #             fall_times.append(sol.t[-1])
+    #     results[speed] = distances
+    #     times[speed] = fall_times
+        
+
+    # for speed, t_list in times.items():
+    #     print(f"{speed} m/s fall times (s):",
+    #           [f"{t:.2f}" for t in t_list])
 
     plt.figure(figsize=(8,5))
 
@@ -99,15 +147,15 @@ def main():
                 rtol=1e-6, atol=1e-9
             )
             # convert to minutes with true float division
-            t_min = sol.t / 60.0
+            
             y_pos = sol.y[1]
 
             plt.plot(
-                t_min, y_pos,
+                sol.t, y_pos,
                 label=f'{D*1e6:.1f} µm @ {speed:.0f} m/s'
             )
 
-    plt.xlabel('Time (min)')
+    plt.xlabel('Time (seconds)')
     plt.ylabel('Height above floor (m)')
     plt.title('Droplet Height vs Time for Various Sizes & Speeds')
     plt.ylim(0, h*1.05)
