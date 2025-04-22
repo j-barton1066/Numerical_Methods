@@ -9,6 +9,7 @@ def drag_coefficient(Re):
     return (24/Re) + 1.5
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def droplet_deriv(t, state, m, A, D, rho_air, mu_air, rho_droplet, g):
     x, y, u, v = state
     vel = np.sqrt(u**2 + v**2)
@@ -31,6 +32,8 @@ def ground_event(t, state, h):
 ground_event.terminal = True
 ground_event.direction = -1
 
+=======
+>>>>>>> parent of 5746c6f (working on problem1)
 =======
 >>>>>>> parent of 5746c6f (working on problem1)
 
@@ -76,6 +79,7 @@ def main():
     y_values = solver.y[1]
 
     
+<<<<<<< HEAD
 <<<<<<< HEAD
     t_span = (0, 20*60) # s
     max_dt = 1
@@ -186,6 +190,17 @@ def main():
     plt.grid(ls='--', alpha=0.4)
     plt.tight_layout()
     plt.show()
+=======
+    # print("Reynolds Number:")
+    # print(Re)   
+    # print("Velocity(m/s):", v_droplet)
+    # print("Droplet Diameter (m):", droplet_diameter)
+    # print("Droplet Radius (m):", radius)
+    # print("Droplet Volume (m^3):", V_droplet)
+    # print("Droplet Surface Area (m^2):", A_droplet)
+    # print("Droplet Mass (kg):", mass_droplet)
+
+>>>>>>> parent of 5746c6f (working on problem1)
 =======
     # print("Reynolds Number:")
     # print(Re)   
