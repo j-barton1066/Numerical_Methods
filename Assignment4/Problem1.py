@@ -1,12 +1,34 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
+from scipy.integrate import solve_ivp
 
 def Reynolds_number(velocity, diameter, viscosity):
     return (velocity * diameter) / viscosity
 
 def drag_coefficient(Re):
     return (24/Re) + 1.5
+
+def droplet_deriv(t, state, m, A, D, rho_air, mu_air, rho_droplet, g):
+    x, y, u, v = state
+    vel = np.sqrt(u**2 + v**2)
+    Re = Reynolds_number(vel, D, mu_air)
+    Cd = drag_coefficient(Re)
+    F_drag = 0.5 * rho_air * A * Cd * u**2
+    
+    if vel > 0:
+        drag_u = F_drag * (u / vel)
+        drag_v = F_drag * (v / vel)
+    else:
+        drag_u = 0
+        drag_v = 0
+    drag_u = -drag_u / m
+    drag_v = -drag_v / m + (1 - rho_air/rho_droplet) * g
+    return [u, v, drag_u, drag_v]
+
+def ground_event(t, state, h):
+    return state[1]
+ground_event.terminal = True
+ground_event.direction = -1
 
 
 def main():
@@ -31,35 +53,68 @@ def main():
     #Initial Conditons
     h = 1.75 # m (initial height)
     u0 = np.array([1.5, 10, 20, 30, 40, 50]) # m/s (initial velocity)
-    initial_conditions = np.array([0, h, u0, 0]) # m, m/s [x0, y0, u0,v0]
-    # Time Parameters
-    t_span = (0, 10) # s
-    delta_t = 0.01 # s
-
-    solver = sp.integrate.solve_ivp(
-        fun = lambda t, state: droplet_deriv(t, state, m, A, D, rho_air, mu_air, g),
-        t_span = t_span,
-        y0 = initial_conditions,
-        method = 'RK45',
-        events = lambda t, state: ground_event(t, state, h),
-        rtol = 1e-6,
-        atol = 1e-9,
-    )
-
-    t_values = solver.t
-    x_values = solver.y[0]
-    y_values = solver.y[1]
-
     
-    # print("Reynolds Number:")
-    # print(Re)   
-    # print("Velocity(m/s):", v_droplet)
-    # print("Droplet Diameter (m):", droplet_diameter)
-    # print("Droplet Radius (m):", radius)
-    # print("Droplet Volume (m^3):", V_droplet)
-    # print("Droplet Surface Area (m^2):", A_droplet)
-    # print("Droplet Mass (kg):", mass_droplet)
+    t_span = (0, 20*60) # s
+    max_dt = 1 # s
+    times = {}
+    results = {}
+    for speed in u0:
+        distances = []
+        fall_times = []
+        for D, mi, Ai in zip(droplet_diameter, mass_droplet, A_droplet):
+            sol = solve_ivp(
+                fun=lambda t, st: droplet_deriv(t, st, mi, Ai, D, rho_air, mu_air, rho_droplet, g),
+                t_span=t_span,
+                y0=[0, h, speed, 0],
+                method='RK45',
+                events=lambda t, st: ground_event(t, st, h),
+                max_step=max_dt,
+                rtol=1e-6, atol=1e-9
+            )
+            distances.append(sol.y[0, -1])
+            if sol.t_events[0].size > 0:
+                fall_times.append(sol.t_events[0][0])
+            else:
+                fall_times.append(sol.t[-1])
+        results[speed] = distances
+        times[speed] = fall_times
 
+    for speed, t_list in times.items():
+        print(f"{speed} m/s fall times (s):",
+              [f"{t:.2f}" for t in t_list])
+
+    plt.figure(figsize=(8,5))
+
+    # Outer loop over each expiratory speed
+    for speed in u0:
+        # Inner loop over each droplet diameter
+        for D, m, A in zip(droplet_diameter, mass_droplet, A_droplet):
+            sol = solve_ivp(
+                fun=lambda t, y: droplet_deriv(t, y, m, A, D,
+                                            rho_air, mu_air, rho_droplet, g),
+                t_span=t_span,
+                y0=[0, h, speed, 0],                     # use scalar speed
+                events=lambda t, y: ground_event(t, y, h),
+                max_step=max_dt,
+                rtol=1e-6, atol=1e-9
+            )
+            # convert to minutes with true float division
+            t_min = sol.t / 60.0
+            y_pos = sol.y[1]
+
+            plt.plot(
+                t_min, y_pos,
+                label=f'{D*1e6:.1f} µm @ {speed:.0f} m/s'
+            )
+
+    plt.xlabel('Time (min)')
+    plt.ylabel('Height above floor (m)')
+    plt.title('Droplet Height vs Time for Various Sizes & Speeds')
+    plt.ylim(0, h*1.05)
+    plt.legend(loc='best', fontsize='small', ncol=2)
+    plt.grid(ls='--', alpha=0.4)
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()
