@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import solve_ivp
+import scipy as sp
 
 def Reynolds_number(velocity, diameter, viscosity):
     return (velocity * diameter) / viscosity
@@ -8,6 +8,7 @@ def Reynolds_number(velocity, diameter, viscosity):
 def drag_coefficient(Re):
     return (24/Re) + 1.5
 
+<<<<<<< HEAD
 def droplet_deriv(t, state, m, A, D, rho_air, mu_air, rho_droplet, g):
     x, y, u, v = state
     vel = np.sqrt(u**2 + v**2)
@@ -30,6 +31,8 @@ def ground_event(t, state, h):
 ground_event.terminal = True
 ground_event.direction = -1
 
+=======
+>>>>>>> parent of 5746c6f (working on problem1)
 
 def main():
     #Ambient Parameters
@@ -53,7 +56,27 @@ def main():
     #Initial Conditons
     h = 1.75 # m (initial height)
     u0 = np.array([1.5, 10, 20, 30, 40, 50]) # m/s (initial velocity)
+    initial_conditions = np.array([0, h, u0, 0]) # m, m/s [x0, y0, u0,v0]
+    # Time Parameters
+    t_span = (0, 10) # s
+    delta_t = 0.01 # s
+
+    solver = sp.integrate.solve_ivp(
+        fun = lambda t, state: droplet_deriv(t, state, m, A, D, rho_air, mu_air, g),
+        t_span = t_span,
+        y0 = initial_conditions,
+        method = 'RK45',
+        events = lambda t, state: ground_event(t, state, h),
+        rtol = 1e-6,
+        atol = 1e-9,
+    )
+
+    t_values = solver.t
+    x_values = solver.y[0]
+    y_values = solver.y[1]
+
     
+<<<<<<< HEAD
     t_span = (0, 20*60) # s
     max_dt = 1
     first_times    = {}
@@ -163,6 +186,17 @@ def main():
     plt.grid(ls='--', alpha=0.4)
     plt.tight_layout()
     plt.show()
+=======
+    # print("Reynolds Number:")
+    # print(Re)   
+    # print("Velocity(m/s):", v_droplet)
+    # print("Droplet Diameter (m):", droplet_diameter)
+    # print("Droplet Radius (m):", radius)
+    # print("Droplet Volume (m^3):", V_droplet)
+    # print("Droplet Surface Area (m^2):", A_droplet)
+    # print("Droplet Mass (kg):", mass_droplet)
+
+>>>>>>> parent of 5746c6f (working on problem1)
 
 if __name__ == "__main__":
     main()
